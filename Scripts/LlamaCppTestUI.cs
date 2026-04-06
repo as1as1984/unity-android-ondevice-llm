@@ -7,7 +7,7 @@ using UnityEngine.UI;
 using TMPro;
 
 /// <summary>
-/// llama.cpp + OpenCL GPU 테스트 UI.
+/// Test UI for llama.cpp + OpenCL GPU inference.
 /// </summary>
 public class LlamaCppTestUI : MonoBehaviour
 {
@@ -19,10 +19,11 @@ public class LlamaCppTestUI : MonoBehaviour
 
     private static readonly string Prompt =
         "<|system|>\nRPG dungeon JSON generator. Output ONLY valid JSON.<|end|>\n" +
-        "<|user|>\n던전 5층 데이터 JSON. 플레이어: 게으른 빵집 아들(공격형). " +
-        "1-3층 일반몹, 4층 엘리트, 5층 보스. " +
-        "형식: [{\"floor\":1,\"mob\":\"몬스터이름\",\"hp\":숫자,\"atk\":숫자},...] " +
-        "JSON만 출력.<|end|>\n<|assistant|>\n";
+        "<|user|>\nGenerate dungeon data for floors 1-5 in JSON. " +
+        "Player: lazy baker's son (aggressive). " +
+        "Floors 1-3: regular mobs, Floor 4: elite, Floor 5: boss. " +
+        "Format: [{\"floor\":1,\"mob\":\"name\",\"hp\":number,\"atk\":number},...] " +
+        "Output ONLY JSON.<|end|>\n<|assistant|>\n";
 
     private LlamaCppBridge _bridge;
     private bool _ready;
@@ -32,7 +33,7 @@ public class LlamaCppTestUI : MonoBehaviour
     {
         generateButton.interactable = false;
         generateButton.onClick.AddListener(OnGenerateClicked);
-        SetStatus("llama.cpp 초기화 중...");
+        SetStatus("Initializing llama.cpp...");
         SetOutput("");
         timeText.text = "";
         StartCoroutine(Initialize());
@@ -56,11 +57,11 @@ public class LlamaCppTestUI : MonoBehaviour
 
         if (!File.Exists(modelPath))
         {
-            SetStatus("모델 없음.\nadb push model.gguf /data/local/tmp/ 후 재시작");
+            SetStatus("Model not found.\nadb push model.gguf /data/local/tmp/ and restart");
             yield break;
         }
 
-        SetStatus("모델 로딩 중 (GPU)...");
+        SetStatus("Loading model (GPU)...");
         yield return null;
 
         _bridge = new LlamaCppBridge();
@@ -78,7 +79,7 @@ public class LlamaCppTestUI : MonoBehaviour
         while (!done)
         {
             float elapsed = Time.realtimeSinceStartup - loadStart;
-            SetStatus($"모델 로딩 중 (GPU)... {elapsed:F0}s");
+            SetStatus($"Loading model (GPU)... {elapsed:F0}s");
             yield return new WaitForSeconds(0.5f);
         }
 
@@ -86,14 +87,14 @@ public class LlamaCppTestUI : MonoBehaviour
 
         if (err != null)
         {
-            SetStatus($"초기화 실패: {err.Message}");
+            SetStatus($"Init failed: {err.Message}");
             Debug.LogError($"[LlamaCppUI] Init error: {err.Message}\n{err.StackTrace}");
             yield break;
         }
 
         _ready = true;
         generateButton.interactable = true;
-        SetStatus($"준비 완료 (로딩 {loadTime:F1}s). 버튼을 눌러 생성하세요.");
+        SetStatus($"Ready (loaded in {loadTime:F1}s). Press button to generate.");
     }
 
     private IEnumerator Generate()
@@ -102,7 +103,7 @@ public class LlamaCppTestUI : MonoBehaviour
         generateButton.interactable = false;
         SetOutput("");
         timeText.text = "";
-        SetStatus("생성 중 (GPU)...");
+        SetStatus("Generating (GPU)...");
 
         string result = null;
         Exception err = null;
@@ -126,7 +127,7 @@ public class LlamaCppTestUI : MonoBehaviour
         while (!done)
         {
             float elapsed = Time.realtimeSinceStartup - t0;
-            timeText.text = $"경과: {elapsed:F0}s | 토큰: {tokenCount}";
+            timeText.text = $"Elapsed: {elapsed:F0}s | Tokens: {tokenCount}";
             yield return new WaitForSeconds(0.5f);
         }
 
@@ -134,12 +135,12 @@ public class LlamaCppTestUI : MonoBehaviour
 
         if (err != null)
         {
-            SetStatus($"오류: {err.Message}");
+            SetStatus($"Error: {err.Message}");
             Debug.LogError($"[LlamaCppUI] Error: {err.Message}\n{err.StackTrace}");
         }
         else
         {
-            string summary = $"완료: {total:F1}s | {tokenCount}토큰 | {tokenCount / Mathf.Max(total, 0.1f):F1} tok/s";
+            string summary = $"Done: {total:F1}s | {tokenCount} tokens | {tokenCount / Mathf.Max(total, 0.1f):F1} tok/s";
             SetStatus(summary);
             SetOutput(result ?? "(null)");
             timeText.text = "";
@@ -159,7 +160,6 @@ public class LlamaCppTestUI : MonoBehaviour
 
     private void SetOutput(string text)
     {
-        // outputText (ScrollView 내부)와 statusText 둘 다에 표시 시도
         if (outputText != null) outputText.text = text;
     }
 

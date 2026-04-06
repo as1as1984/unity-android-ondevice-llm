@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Unity P/Invoke에서 안전하게 호출할 수 있는 단순화된 C 래퍼.
-// 복잡한 구조체를 직접 마샬링하지 않고 opaque 포인터로 처리.
+// Simplified C wrapper for safe Unity P/Invoke calls.
+// Handles complex structs internally, exposing only opaque pointers.
 
 void unity_llama_backend_init(void) {
     llama_backend_init();
@@ -50,7 +50,7 @@ int unity_llama_decode_batch(struct llama_context * ctx, int * tokens, int n_tok
 }
 
 int unity_llama_sample_greedy(struct llama_context * ctx, const struct llama_vocab * vocab) {
-    // 마지막 토큰의 logits에서 argmax
+    // Argmax over logits of the last token
     float * logits = llama_get_logits_ith(ctx, -1);
     int n_vocab = llama_vocab_n_tokens(vocab);
     int best = 0;

@@ -71,7 +71,7 @@ android {
 	**GOOGLE_PLAY_DEPENDENCIES**
 }**SPLITS_VERSION_CODE****LAUNCHER_SOURCE_BUILD_SETUP**
 
-// Qualcomm DSP RPC: processMainManifest 직전에 unityLibrary manifest 수정
+// Inject Qualcomm DSP RPC and OpenCL native library declarations into manifest
 gradle.taskGraph.beforeTask { task ->
     if (task.name == 'processReleaseMainManifest' || task.name == 'processDebugMainManifest') {
         def unityManifest = new File(task.project.rootDir, "unityLibrary/src/main/AndroidManifest.xml")

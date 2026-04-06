@@ -4,8 +4,7 @@ using System.Text;
 using UnityEngine;
 
 /// <summary>
-/// llama.cpp 단순화된 C 래퍼 P/Invoke 브릿지.
-/// unity_bridge.c의 함수를 호출.
+/// P/Invoke bridge for llama.cpp via simplified C wrapper (unity_bridge.c).
 /// </summary>
 public class LlamaCppBridge : IDisposable
 {
